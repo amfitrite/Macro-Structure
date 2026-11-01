@@ -824,6 +824,32 @@ class FramelessMacroApp(tk.Tk):
         messagebox.showinfo("Berhasil Disimpan", f"Hasil analisis Dual-Engine telah disimpan ke:\n{os.path.abspath(path)}")
 
 
+
+def _position_smartly(window, parent, width, height):
+    parent.update_idletasks()
+    px = parent.winfo_x()
+    py = parent.winfo_y()
+    pw = parent.winfo_width()
+
+    screen_w = parent.winfo_screenwidth()
+    screen_h = parent.winfo_screenheight()
+
+    gap = 12
+    x = px + pw + gap
+    y = py
+
+    if x + width > screen_w:
+        x = px - width - gap
+        if x < 0:
+            x = 10
+
+    if y + height > screen_h:
+        y = screen_h - height - 40
+        if y < 0:
+            y = 10
+
+    window.geometry(f"{width}x{height}+{x}+{y}")
+
 # ---------------------------------------------------------------- True Independent Audit Window
 class IndependentAuditWindow(tk.Toplevel):
     """Rigorous Independent Audit: Compares Yahoo vs CNBC, checks data age & market status,
@@ -832,7 +858,7 @@ class IndependentAuditWindow(tk.Toplevel):
     def __init__(self, parent, ticker, description, dashboard_price):
         super().__init__(parent)
         self.overrideredirect(True)
-        self.geometry("860x650+120+80")
+        _position_smartly(self, parent, 860, 650)
         self.configure(bg=BG_WINDOW)
         self.transient(parent)
 
@@ -1084,7 +1110,7 @@ class GoogleNewsAuditWindow(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.overrideredirect(True)
-        self.geometry("820x560+150+120")
+        _position_smartly(self, parent, 820, 560)
         self.configure(bg=BG_WINDOW)
         self.transient(parent)
 
