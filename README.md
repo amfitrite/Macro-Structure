@@ -65,6 +65,7 @@ environment variable.
 | `/trader-tax` | Tax Optimizer | Tracks cost-basis lots, gains and losses, tax-loss harvesting candidates and wash sales. |
 | `/trader-alerts` | Price Alerts | Rings when a price target, a stop or the opening bell hits, with the real NYSE calendar. |
 | `/trader-rebalance` | Rebalancer | Brings the portfolio back to its target weights when it drifts past your band. |
+| `/trader-macro` | Macro & Gold Forecast | Connects US Equities sentiment to DXY and Treasury Yields, and forecasts Gold (XAU/USD) direction. |
 
 ## How to use it
 
@@ -123,6 +124,8 @@ python3 trader-risk/check.py                                           # PASS / 
 python3 trader-broker/ticket.py show                                   # the tickets, READY or not
 python3 trader-tax/lots.py harvest --min-loss 100                      # with wash-sale checks
 python3 trader-alerts/alerts.py clock                                  # NYSE open or closed
+python3 trader-macro/forecast.py                                       # live macro analysis & Gold forecast
+python3 trader-macro/forecast.py                                       # live macro analysis & Gold forecast
 python3 trader-rebalance/rebalance.py --band 5                         # the drift table
 ```
 
