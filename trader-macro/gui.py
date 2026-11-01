@@ -825,30 +825,66 @@ class FramelessMacroApp(tk.Tk):
 
 
 
-def _position_smartly(window, parent, width, height):
+def _position_smartly(window, parent, preferred_w, preferred_h):
+    """Positions popup window intelligently to the right side of the main application.
+    If space to the right is tight, adjusts width or shifts position smoothly so it
+    NEVER lands behind the main app and always stays in the foreground.
+    """
     parent.update_idletasks()
     px = parent.winfo_x()
     py = parent.winfo_y()
     pw = parent.winfo_width()
+    ph = parent.winfo_height()
 
     screen_w = parent.winfo_screenwidth()
     screen_h = parent.winfo_screenheight()
 
+    # Work area bounds (excluding taskbar on Windows)
+    work_top = 0
+    work_bottom = screen_h - 40
+    if sys.platform == "win32":
+        try:
+            rect = wintypes.RECT()
+            user32.SystemParametersInfoW(0x0030, 0, ctypes.byref(rect), 0)
+            work_top = rect.top
+            work_bottom = rect.bottom
+            screen_w = rect.right - rect.left
+        except Exception:
+            pass
+
     gap = 12
-    x = px + pw + gap
-    y = py
+    space_right = screen_w - (px + pw + gap)
+    space_left = px - gap
 
-    if x + width > screen_w:
-        x = px - width - gap
-        if x < 0:
-            x = 10
+    # Determine optimal width and position
+    w = preferred_w
+    h = min(preferred_h, work_bottom - work_top - 20)
+    y = max(work_top + 10, min(py, work_bottom - h - 10))
 
-    if y + height > screen_h:
-        y = screen_h - height - 40
-        if y < 0:
-            y = 10
+    if space_right >= 620:
+        # Fits nicely to the right of the main app
+        w = min(preferred_w, space_right)
+        x = px + pw + gap
+    elif space_left >= 620:
+        # Fits to the left of the main app
+        w = min(preferred_w, space_left)
+        x = px - w - gap
+    elif space_right >= 480:
+        # Fit to right with adjusted width
+        w = space_right
+        x = px + pw + gap
+    else:
+        # If main window takes up almost whole screen, dock popup to right edge of screen
+        w = min(preferred_w, int(screen_w * 0.45))
+        x = max(10, screen_w - w - 10)
 
-    window.geometry(f"{width}x{height}+{x}+{y}")
+    window.geometry(f"{w}x{h}+{x}+{y}")
+
+    # Ensure window is on top of parent and focused (never behind)
+    window.lift()
+    window.attributes("-topmost", True)
+    window.after(150, lambda: window.attributes("-topmost", False))
+    window.focus_force()
 
 # ---------------------------------------------------------------- True Independent Audit Window
 class IndependentAuditWindow(tk.Toplevel):
