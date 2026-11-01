@@ -36,6 +36,7 @@ A screen is a filter, not a recommendation.
 """
 
 import argparse
+import bisect
 import csv
 import json
 import os
@@ -216,9 +217,11 @@ def rank(results, keys):
             continue
         ordered = sorted(v for _, v in vals)
         n = len(ordered)
+        # ⚡ Bolt: optimized O(N^2) list iteration to O(N log N) using binary search (bisect)
+        # Replaced `sum(1 for x in ordered if x < v)` with `bisect_left`
         for r, v in vals:
-            below = sum(1 for x in ordered if x < v)
-            equal = sum(1 for x in ordered if x == v)
+            below = bisect.bisect_left(ordered, v)
+            equal = bisect.bisect_right(ordered, v) - below
             pos = (below + (equal - 1) / 2.0) / (n - 1) if n > 1 else 1.0
             r["rank_parts"][m] = round(pos if desc else 1.0 - pos, 3)
     weights = {k["metric"]: float(k.get("weight", 1)) for k in keys}
